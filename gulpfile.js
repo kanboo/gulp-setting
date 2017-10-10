@@ -146,6 +146,12 @@ gulp.task('watch', function () {
     gulp.watch('./source/js/**/*.js', ['babel']);
 });
 
+
+gulp.task('deploy', function () {
+    return gulp.src('./public/**/*')
+        .pipe($.ghPages());
+});
+
 /* 發佈專案時，使用的 任務 */
 gulp.task('build', gulpSequence('clean', 'jade', 'sass', 'babel', 'vendorJs', 'image-min'))
 
