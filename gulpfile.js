@@ -20,7 +20,6 @@ var envOptions = {
     default: {
         env: 'develop'
     }
-
 }
 
 var Options = minimist(process.argv.slice(2), envOptions)
@@ -33,7 +32,7 @@ gulp.task('clean', function () {
         .pipe($.clean());
 });
 
-/* 預執行下列copyHTML任務的話，在command 輸入 'gulp [任務名稱]' 即可執行*/
+/* 預執行下列copyHTML任務的話，在command 輸入 'gulp [任務名稱]' 即可執行*/
 gulp.task('copyHTML', function () {
     /* 將 資料複製 至 新地方 */
     /* gulp.src('資料來源')  */
@@ -70,13 +69,24 @@ gulp.task('sass', function () {
     return gulp.src('./source/scss/**/*.scss')
         .pipe($.plumber()) //出錯不中斷，指令加在src後即可
         .pipe($.sourcemaps.init())
-        .pipe($.sass().on('error', $.sass.logError))
+        //.pipe($.sass().on('error', $.sass.logError))  //單純編譯sass
+        .pipe($.sass({
+            'includePaths': ['./bower_components/bootstrap-sass/assets/stylesheets',
+                './bower_components/components-font-awesome/scss'
+            ]
+        }).on('error', $.sass.logError)) //有include Bootstrap-Sass、fontawesome
         //此時已編譯好 CSS
         .pipe($.postcss(plugins)) //自動為你的 CSS 補上前綴詞
         .pipe($.if(Options.env === "build", $.cleanCss())) //壓縮css
         .pipe($.sourcemaps.write('.'))
         .pipe(gulp.dest('./public/css'))
         .pipe(browserSync.stream());
+});
+
+/* fontawesome字體 */
+gulp.task('icons', function () {
+    return gulp.src('./bower_components/components-font-awesome/fonts/**.*')
+        .pipe(gulp.dest('./public/fonts'));
 });
 
 
@@ -112,7 +122,7 @@ gulp.task('bower', function () {
 });
 
 /* 將外部檔案與專案連結 */
-/* 中間的中括號['bower']，代表要先執行 bower 任務，然後才執行 vendorJS 的任務 */
+/* 中間的中括號['bower']，代表要先執行 bower 任務，然後才執行 vendorJS 的任務 */
 gulp.task('vendorJs', ['bower'], function () {
     return gulp.src('./.tmp/vendors/**/**.js')
         .pipe($.concat('vendors.js')) //將外部檔案所有js合併成一個檔案
@@ -152,11 +162,12 @@ gulp.task('deploy', function () {
         .pipe($.ghPages());
 });
 
+
 /* 發佈專案時，使用的 任務 */
-gulp.task('build', gulpSequence('clean', 'jade', 'sass', 'babel', 'vendorJs', 'image-min'))
+gulp.task('build', gulpSequence('clean', 'jade', 'sass', 'icons', 'babel', 'vendorJs', 'image-min'))
 
 /* 將多個任務一起執行，任務default為gulp的預設名稱，所以執行時，只需打 gulp 即可。 */
-gulp.task('default', ['jade', 'sass', 'babel', 'vendorJs', 'image-min', 'browser-sync', 'watch'])
+gulp.task('default', ['jade', 'sass', 'icons', 'babel', 'vendorJs', 'image-min', 'browser-sync', 'watch'])
 
 
 /* 總結 */
