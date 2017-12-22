@@ -12,6 +12,8 @@ var mainBowerFiles = require('main-bower-files'); //同步bower下載外部檔�
 var browserSync = require('browser-sync').create(); //同步bower下載外部檔案
 var minimist = require('minimist') //取得輸入gulp指令後面帶的 參數
 var gulpSequence = require('gulp-sequence') //依序執行 任務
+var htmlmin = require('gulp-htmlmin'); //對HTML代碼進行壓縮
+var htmlclean = require('gulp-htmlclean'); //對HTML進行代碼清理，去除不必要的空行等
 
 
 /* 設定參數之預設值 */
@@ -40,7 +42,21 @@ gulp.task('copyHTML', function () {
     /* gulp.dest('輸出目標至某資料夾')› */
     return gulp.src('./source/**/*.html')
         .pipe(gulp.dest('./public/'))
+        .pipe(browserSync.stream());
 })
+
+/* 壓縮 html */
+gulp.task('minify-html', function () {
+    return gulp.src('./source/**/*.html')
+        .pipe(htmlclean())  //對HTML進行代碼清理，去除不必要的空行等
+        .pipe(htmlmin({     //對HTML代碼進行壓縮
+            removeComments: true,
+            minifyJS: true,
+            minifyCSS: true,
+            minifyURLs: true,
+        }))
+        .pipe(gulp.dest('./public/'))
+});
 
 
 /* gulp-jade - HTML 樣板語言 */
@@ -78,7 +94,7 @@ gulp.task('sass', function () {
         //此時已編譯好 CSS
         .pipe($.postcss(plugins)) //自動為你的 CSS 補上前綴詞
         .pipe($.if(Options.env === "build", $.cleanCss())) //壓縮css
-        .pipe($.sourcemaps.write('.'))
+        .pipe($.sourcemaps.write('.')) //紀錄屬性來自哪個CSS檔
         .pipe(gulp.dest('./public/css'))
         .pipe(browserSync.stream());
 });
@@ -97,7 +113,7 @@ gulp.task('babel', () =>
     .pipe($.babel({
         presets: ['env']
     })) //編譯es5
-    .pipe($.concat('all.js')) //將自己寫的所有js合併成一個檔案
+    //.pipe($.concat('all.js')) //將自己寫的所有js合併成一個檔案
     .pipe($.if(Options.env === "build", $.uglify({
         compress: {
             drop_console: true //將console.log移除
@@ -124,7 +140,8 @@ gulp.task('bower', function () {
 /* 將外部檔案與專案連結 */
 /* 中間的中括號['bower']，代表要先執行 bower 任務，然後才執行 vendorJS 的任務 */
 gulp.task('vendorJs', ['bower'], function () {
-    return gulp.src('./.tmp/vendors/**/**.js')
+    return gulp.src(['./.tmp/vendors/jquery.js','./.tmp/vendors/bootstrap.js'])
+        //gulp.src('./.tmp/vendors/**/**.js')
         .pipe($.concat('vendors.js')) //將外部檔案所有js合併成一個檔案
         .pipe($.if(Options.env === "build", $.uglify({
             compress: {
@@ -151,6 +168,7 @@ gulp.task('browser-sync', function () {
 gulp.task('watch', function () {
     //參數1：監控的資料夾；參數2：執行的任務
     //當監控資料夾有變更時，會立即執行任務
+    gulp.watch('./source/**/*.html', ['copyHTML']);
     gulp.watch('./source/scss/**/*.scss', ['sass']);
     gulp.watch('./source/*.jade', ['jade']);
     gulp.watch('./source/js/**/*.js', ['babel']);
@@ -164,10 +182,10 @@ gulp.task('deploy', function () {
 
 
 /* 發佈專案時，使用的 任務 */
-gulp.task('build', gulpSequence('clean', 'jade', 'sass', 'icons', 'babel', 'vendorJs', 'image-min'))
+gulp.task('build', gulpSequence('clean', 'minify-html', 'jade', 'sass', 'icons', 'babel', 'vendorJs', 'image-min'))
 
 /* 將多個任務一起執行，任務default為gulp的預設名稱，所以執行時，只需打 gulp 即可。 */
-gulp.task('default', ['jade', 'sass', 'icons', 'babel', 'vendorJs', 'image-min', 'browser-sync', 'watch'])
+gulp.task('default', ['copyHTML', 'jade', 'sass', 'icons', 'babel', 'vendorJs', 'image-min', 'browser-sync', 'watch'])
 
 
 /* 總結 */
