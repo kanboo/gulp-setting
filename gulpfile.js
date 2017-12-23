@@ -99,12 +99,11 @@ gulp.task('sass', function () {
         .pipe(browserSync.stream());
 });
 
-/* fontawesome字體 */
+/* fontawesome字體 和 其他字體 */
 gulp.task('icons', function () {
-    return gulp.src('./bower_components/components-font-awesome/fonts/**.*')
+    return gulp.src(['./bower_components/components-font-awesome/fonts/**.*', './source/fonts/*'])
         .pipe(gulp.dest('./public/fonts'));
 });
-
 
 /* JavaScript ES6 編譯工具 */
 gulp.task('babel', () =>
