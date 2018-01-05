@@ -48,8 +48,8 @@ gulp.task('copyHTML', function () {
 /* 壓縮 html */
 gulp.task('minify-html', function () {
     return gulp.src('./source/**/*.html')
-        .pipe(htmlclean())  //對HTML進行代碼清理，去除不必要的空行等
-        .pipe(htmlmin({     //對HTML代碼進行壓縮
+        .pipe(htmlclean()) //對HTML進行代碼清理，去除不必要的空行等
+        .pipe(htmlmin({ //對HTML代碼進行壓縮
             removeComments: true,
             minifyJS: true,
             minifyCSS: true,
@@ -78,7 +78,7 @@ gulp.task('sass', function () {
     //gulp-postcss的延伸套件
     var plugins = [
         autoprefixer({
-            browsers: ['last 2 version', '> 5%', 'ie 9-11']
+            browsers: ['last 5 version']
         }),
     ];
 
@@ -110,7 +110,7 @@ gulp.task('babel', () =>
     gulp.src('./source/js/**/*.js')
     .pipe($.sourcemaps.init())
     .pipe($.babel({
-        presets: ['env']
+        presets: ['es2015']
     })) //編譯es5
     //.pipe($.concat('all.js')) //將自己寫的所有js合併成一個檔案
     .pipe($.if(Options.env === "build", $.uglify({
@@ -139,8 +139,9 @@ gulp.task('bower', function () {
 /* 將外部檔案與專案連結 */
 /* 中間的中括號['bower']，代表要先執行 bower 任務，然後才執行 vendorJS 的任務 */
 gulp.task('vendorJs', ['bower'], function () {
-    return gulp.src(['./.tmp/vendors/jquery.js','./.tmp/vendors/bootstrap.js'])
-        //gulp.src('./.tmp/vendors/**/**.js')
+    // return gulp.src(['./.tmp/vendors/jquery.js','./.tmp/vendors/bootstrap.js'])
+    return gulp.src('./.tmp/vendors/**/**.js')
+        .pipe($.order(['jquery.js', '*.js']))
         .pipe($.concat('vendors.js')) //將外部檔案所有js合併成一個檔案
         .pipe($.if(Options.env === "build", $.uglify({
             compress: {
