@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Kanboo",
+  "author": "kanboo <wang.kanboo@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "autoprefixer": "^7.1.5",
@@ -19,6 +19,7 @@
     "gulp-clean-css": "^3.9.0",
     "gulp-concat": "^2.6.1",
     "gulp-gh-pages": "^0.5.4",
+    "gulp-html-extend": "^1.1.6",
     "gulp-htmlclean": "^2.7.16",
     "gulp-htmlmin": "^3.0.0",
     "gulp-if": "^2.0.2",
